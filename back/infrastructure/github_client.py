@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 import httpx
 
-from app.application.ports import GitHubRepositoryPort
+from back.application.ports import GitHubRepositoryPort
 
 
 class GitHubClient(GitHubRepositoryPort):

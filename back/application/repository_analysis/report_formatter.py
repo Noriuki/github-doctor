@@ -1,6 +1,6 @@
 """Format health report as Markdown and badge data."""
 
-from app.domain.models import RepositoryHealthReport
+from back.domain.models import RepositoryHealthReport
 
 
 def report_to_markdown(report: RepositoryHealthReport) -> str:

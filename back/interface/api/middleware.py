@@ -8,7 +8,7 @@ import uuid
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-from app.infrastructure.metrics import get_metrics
+from back.infrastructure.metrics import get_metrics
 
 logger = logging.getLogger("github_doctor")
 

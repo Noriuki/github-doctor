@@ -59,7 +59,7 @@ github-doctor/
 ├── Makefile            # Comandos: make help, make up, make run-api, make run-front, etc.
 ├── docker-compose.yml   # api (8000) + web (5173)
 ├── Dockerfile          # Backend (FastAPI)
-├── app/                 # Backend – Clean Architecture
+├── back/                # Backend – Clean Architecture
 ├── frontend/            # React + Vite
 │   ├── src/
 │   │   ├── api/         # Cliente HTTP da API
@@ -77,7 +77,7 @@ github-doctor/
 The backend follows **Clean Architecture** with clear layers:
 
 ```
-app/
+back/
 ├── domain/           # Entities and value objects (no external deps)
 │   └── models.py     # RepositoryHealthReport, DocumentationScore, TestStatus, etc.
 ├── application/      # Use cases and ports (interfaces)
@@ -317,8 +317,8 @@ github-doctor analyze owner/repo --markdown --output report.md
 Or run the module:
 
 ```bash
-python -m app.interface.cli analyze owner/repo
-python -m app.interface.cli analyze owner/repo -m -o report.md
+python -m back.interface.cli analyze owner/repo
+python -m back.interface.cli analyze owner/repo -m -o report.md
 ```
 
 ## GitHub Repo Badges

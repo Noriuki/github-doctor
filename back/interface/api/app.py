@@ -7,10 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from starlette.requests import Request
 
-from app.config import get_settings
-from app.interface.api.middleware import ObservabilityMiddleware, RequestIDMiddleware
-from app.interface.api.routes import router
-from app.infrastructure.metrics import get_metrics
+from back.config import get_settings
+from back.interface.api.middleware import ObservabilityMiddleware, RequestIDMiddleware
+from back.interface.api.routes import router
+from back.infrastructure.metrics import get_metrics
 
 settings = get_settings()
 

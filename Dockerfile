@@ -17,7 +17,7 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy application
-COPY app/ ./app/
+COPY back/ ./back/
 COPY main.py .
 
 EXPOSE 8000

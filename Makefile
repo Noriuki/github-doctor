@@ -68,7 +68,7 @@ logs:
 # --- CLI e verificação ---
 doctor:
 	@if [ -z "$(REPO)" ]; then echo "Uso: make doctor REPO=owner/repo"; exit 1; fi
-	python -m app.interface.cli analyze $(REPO)
+	python -m back.interface.cli analyze $(REPO)
 
 verify:
 	python scripts/verify_flow.py

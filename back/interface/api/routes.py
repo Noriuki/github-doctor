@@ -3,18 +3,18 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 
-from app.application.analyze_repository_use_case import AnalyzeRepositoryUseCase
-from app.application.repository_analysis.report_formatter import report_to_markdown, get_badge_url
-from app.domain.models import RepositoryHealthReport
-from app.infrastructure.cache import get_report_cache
-from app.infrastructure.metrics import get_metrics
+from back.application.analyze_repository_use_case import AnalyzeRepositoryUseCase
+from back.application.repository_analysis.report_formatter import report_to_markdown, get_badge_url
+from back.domain.models import RepositoryHealthReport
+from back.infrastructure.cache import get_report_cache
+from back.infrastructure.metrics import get_metrics
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
 
 def get_use_case() -> AnalyzeRepositoryUseCase:
     """Dependency: create use case with configured GitHub client."""
-    from app.config import get_github_client
+    from back.config import get_github_client
     return AnalyzeRepositoryUseCase(github=get_github_client())
 
 

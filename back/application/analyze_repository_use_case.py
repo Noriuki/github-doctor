@@ -1,8 +1,8 @@
 """Use case: analyze a GitHub repository and return health report."""
 
-from app.application.ports import GitHubRepositoryPort
-from app.application.repository_analysis.analyze_repository import analyze_repository
-from app.domain.models import RepositoryHealthReport
+from back.application.ports import GitHubRepositoryPort
+from back.application.repository_analysis.analyze_repository import analyze_repository
+from back.domain.models import RepositoryHealthReport
 
 
 class AnalyzeRepositoryUseCase:

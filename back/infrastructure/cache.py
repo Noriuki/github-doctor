@@ -3,7 +3,7 @@
 import time
 from typing import Any, Optional
 
-from app.domain.models import RepositoryHealthReport
+from back.domain.models import RepositoryHealthReport
 
 
 class ReportCache:
@@ -54,7 +54,7 @@ def get_report_cache(ttl_seconds: Optional[int] = None) -> ReportCache:
     if _report_cache is None:
         if ttl_seconds is None:
             try:
-                from app.config import get_settings
+                from back.config import get_settings
                 ttl_seconds = get_settings().cache_ttl_seconds
             except Exception:
                 ttl_seconds = 300

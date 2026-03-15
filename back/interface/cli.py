@@ -8,9 +8,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from app.config import get_github_client
-from app.application.analyze_repository_use_case import AnalyzeRepositoryUseCase
-from app.application.repository_analysis.report_formatter import report_to_markdown
+from back.config import get_github_client
+from back.application.analyze_repository_use_case import AnalyzeRepositoryUseCase
+from back.application.repository_analysis.report_formatter import report_to_markdown
 
 app = typer.Typer(
     name="github-doctor",

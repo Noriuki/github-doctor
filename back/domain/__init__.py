@@ -1,6 +1,6 @@
 """Domain layer - entities and value objects."""
 
-from app.domain.models import (
+from back.domain.models import (
     RepositoryHealthReport,
     DocumentationScore,
     TestStatus,

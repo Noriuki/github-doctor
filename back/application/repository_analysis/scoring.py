@@ -1,6 +1,6 @@
 """Health score computation from report components."""
 
-from app.domain.models import (
+from back.domain.models import (
     RepositoryHealthReport,
     DocumentationScore,
     TestStatus,

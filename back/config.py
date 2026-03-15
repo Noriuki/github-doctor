@@ -24,6 +24,6 @@ def get_settings() -> Settings:
 
 def get_github_client():
     """Return configured GitHub client (used by API/CLI)."""
-    from app.infrastructure.github_client import GitHubClient
+    from back.infrastructure.github_client import GitHubClient
     settings = get_settings()
     return GitHubClient(token=settings.github_token)

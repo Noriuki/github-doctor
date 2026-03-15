@@ -12,9 +12,9 @@ from pathlib import Path
 # Ensure app is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.application.ports import GitHubRepositoryPort
-from app.application.repository_analysis.analyze_repository import analyze_repository
-from app.domain.models import RepositoryHealthReport
+from back.application.ports import GitHubRepositoryPort
+from back.application.repository_analysis.analyze_repository import analyze_repository
+from back.domain.models import RepositoryHealthReport
 
 
 class MockGitHubClient(GitHubRepositoryPort):

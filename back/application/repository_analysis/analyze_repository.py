@@ -4,8 +4,8 @@ import json
 import re
 from typing import Any
 
-from app.application.ports import GitHubRepositoryPort
-from app.domain.models import (
+from back.application.ports import GitHubRepositoryPort
+from back.domain.models import (
     RepositoryHealthReport,
     DocumentationScore,
     TestStatus,
@@ -14,7 +14,7 @@ from app.domain.models import (
     TestPresence,
     CICDType,
 )
-from app.application.repository_analysis.scoring import compute_health_score
+from back.application.repository_analysis.scoring import compute_health_score
 
 # Common README names (GitHub API is case-sensitive; try common variants)
 README_NAMES = ("README.md", "readme.md", "README.rst", "readme.rst", "README.txt", "readme.txt", "README", "readme")
