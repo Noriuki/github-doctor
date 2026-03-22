@@ -1,37 +1,56 @@
 import { useState } from 'react'
 import { Layout } from '../components'
-import { getReport, ApiError } from '../api'
+import { getReport, getProfile, ApiError } from '../api'
+import { parseRepoInput } from '../utils/parseRepo'
+import { parseProfileInput } from '../utils/parseProfile'
 
 export function HomePage() {
+  const [mode, setMode] = useState('repo') // 'repo' | 'profile'
   const [input, setInput] = useState('')
   const [result, setResult] = useState(null)
+  const [profileResult, setProfileResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [errorRequestId, setErrorRequestId] = useState(null)
 
   const handleAnalyze = async () => {
-    const trimmed = input.trim()
-    if (!trimmed) return
-    const parts = trimmed.split('/').map((s) => s.trim()).filter(Boolean)
-    if (parts.length < 2) {
-      setError('Digite no formato owner/repo (ex.: octocat/Hello-World)')
-      setResult(null)
-      return
-    }
-    const [owner, ...repoParts] = parts
-    const repo = repoParts.join('/')
     setError(null)
     setErrorRequestId(null)
     setResult(null)
+    setProfileResult(null)
+
+    if (mode === 'repo') {
+      const parsed = parseRepoInput(input)
+      if (!parsed) {
+        setError('Use owner/repo ou uma URL do GitHub (ex.: Noriuki/scrum-bot ou https://github.com/Noriuki/scrum-bot)')
+        return
+      }
+      const { owner, repo } = parsed
+      setLoading(true)
+      try {
+        const data = await getReport(owner, repo)
+        setResult(data)
+      } catch (err) {
+        setError(err.message || 'Erro ao analisar repositório')
+        if (err instanceof ApiError && err.requestId) setErrorRequestId(err.requestId)
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    const username = parseProfileInput(input)
+    if (!username) {
+      setError('Informe o @ ou URL do perfil (ex.: Noriuki ou https://github.com/Noriuki)')
+      return
+    }
     setLoading(true)
     try {
-      const data = await getReport(owner, repo)
-      setResult(data)
+      const data = await getProfile(username, false)
+      setProfileResult(data)
     } catch (err) {
-      setError(err.message || 'Erro ao analisar repositório')
-      if (err instanceof ApiError && err.requestId) {
-        setErrorRequestId(err.requestId)
-      }
+      setError(err.message || 'Erro ao analisar perfil')
+      if (err instanceof ApiError && err.requestId) setErrorRequestId(err.requestId)
     } finally {
       setLoading(false)
     }
@@ -42,19 +61,62 @@ export function HomePage() {
   const cicd = result?.cicd
   const deps = result?.dependencies
 
+  const comp = profileResult?.completeness
+  const highlights = profileResult?.highlights ?? []
+
   return (
     <Layout>
       <section className="panel">
-        <h2>Analisar repositório</h2>
+        <div className="tabs">
+          <button
+            type="button"
+            className={`tab ${mode === 'repo' ? 'active' : ''}`}
+            onClick={() => {
+              setMode('repo')
+              setError(null)
+              setResult(null)
+              setProfileResult(null)
+            }}
+          >
+            Repositório
+          </button>
+          <button
+            type="button"
+            className={`tab ${mode === 'profile' ? 'active' : ''}`}
+            onClick={() => {
+              setMode('profile')
+              setError(null)
+              setResult(null)
+              setProfileResult(null)
+            }}
+          >
+            Perfil GitHub
+          </button>
+        </div>
+
+        <h2>{mode === 'repo' ? 'Analisar repositório' : 'Analisar perfil (portfólio)'}</h2>
         <p className="hint">
-          Informe um repositório GitHub no formato <code>owner/repo</code>. A análise usa a API do GitHub (README, testes, CI/CD, dependências).
+          {mode === 'repo' ? (
+            <>
+              Informe <code>owner/repo</code> ou cole a URL do repositório. A análise usa a API do GitHub (README, testes, CI/CD, dependências).
+            </>
+          ) : (
+            <>
+              Focado em <strong>primeira impressão para recrutadores</strong>: README de perfil (<code>user/user</code>), bio/links, repositórios fixados
+              (com token GitHub) ou destaque por estrelas, e saúde média desses projetos.
+            </>
+          )}
         </p>
-        <label htmlFor="repo">Repositório (owner/repo)</label>
+        <label htmlFor="repo">{mode === 'repo' ? 'Repositório' : 'Usuário ou URL do perfil'}</label>
         <input
           id="repo"
           type="text"
           className="input"
-          placeholder="Ex.: octocat/Hello-World"
+          placeholder={
+            mode === 'repo'
+              ? 'Noriuki/scrum-bot ou https://github.com/Noriuki/scrum-bot'
+              : 'Noriuki ou https://github.com/Noriuki'
+          }
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
@@ -77,7 +139,7 @@ export function HomePage() {
           </div>
         )}
 
-        {result && !error && (
+        {result && !error && mode === 'repo' && (
           <div className="result analysis-result">
             <div className="report-header">
               <h3>{result.repository}</h3>
@@ -137,6 +199,59 @@ export function HomePage() {
                 <p className="detail-title">Dependências</p>
                 <p>Arquivos: {deps.dependency_files.join(', ')}</p>
                 <p>Total: {deps.total_dependencies} · Desatualizadas: {deps.outdated_count}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {profileResult && !error && mode === 'profile' && (
+          <div className="result analysis-result profile-report">
+            <div className="report-header">
+              <div>
+                <h3>
+                  @{profileResult.username}
+                  {profileResult.display_name && (
+                    <span className="display-name"> · {profileResult.display_name}</span>
+                  )}
+                </h3>
+                <p className="profile-meta">
+                  {profileResult.followers} seguidores · {profileResult.public_repos} repos públicos
+                  {profileResult.created_at && (
+                    <> · conta desde {new Date(profileResult.created_at).getFullYear()}</>
+                  )}
+                </p>
+              </div>
+              <div className="health-score" data-score={profileResult.profile_score}>
+                {Math.round(profileResult.profile_score)}%
+              </div>
+            </div>
+            <p className="health-label">Profile score (portfólio)</p>
+
+            <p className="recruiter-pitch">{profileResult.recruiter_pitch}</p>
+
+            <div className="detail-block">
+              <p className="detail-title">Completude do perfil</p>
+              <p>{comp?.message}</p>
+              <p className="completeness-score">Nota: {comp?.score ?? 0}/10</p>
+            </div>
+
+            <p className="pinned-source">
+              Destaques:{' '}
+              {profileResult.pinned_source === 'graphql_pinned'
+                ? 'repositórios fixados (GitHub)'
+                : 'repos públicos com mais estrelas (use token para pins reais)'}
+            </p>
+
+            {highlights.length > 0 && (
+              <div className="detail-block">
+                <p className="detail-title">Projetos em destaque + saúde</p>
+                <ul className="highlights-list">
+                  {highlights.map((h) => (
+                    <li key={h.repository}>
+                      <strong>{h.repository}</strong> ★{h.stars} · {Math.round(h.health_score)}% — {h.one_liner}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

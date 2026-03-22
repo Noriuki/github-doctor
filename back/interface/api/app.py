@@ -24,7 +24,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.api_title,
         version=settings.api_version,
-        description="Analyze GitHub repositories and generate health reports.",
+        description="Analyze GitHub repositories and user profiles (recruiter-oriented portfolio check).",
     )
 
     app.add_middleware(
@@ -45,7 +45,8 @@ def create_app() -> FastAPI:
             "docs": "/docs",
             "health": "/health",
             "metrics": "/metrics",
-            "analyze": "/analyze/{owner}/{repo}",
+            "analyze_repo": "/analyze/{owner}/{repo}",
+            "analyze_profile": "/analyze/profile/{username}",
         }
 
     @app.get("/health")
@@ -53,8 +54,8 @@ def create_app() -> FastAPI:
         """Health check for load balancers and orchestrators (e.g. Kubernetes)."""
         return {"status": "ok", "version": settings.api_version}
 
-    @app.get("/metrics")
-    async def metrics(request: Request) -> dict | PlainTextResponse:
+    @app.get("/metrics", response_model=None)
+    async def metrics(request: Request):
         """
         Application metrics. Returns JSON by default.
         Use Accept: text/plain for Prometheus exposition format.

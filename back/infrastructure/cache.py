@@ -3,7 +3,7 @@
 import time
 from typing import Any, Optional
 
-from back.domain.models import RepositoryHealthReport
+from back.domain.models import ProfileHealthReport, RepositoryHealthReport
 
 
 class ReportCache:
@@ -45,8 +45,44 @@ class ReportCache:
             del self._store[k]
 
 
+class ProfileReportCache:
+    """TTL cache for profile analysis results."""
+
+    def __init__(self, ttl_seconds: int = 300, max_entries: int = 200):
+        self._ttl = ttl_seconds
+        self._max = max_entries
+        self._store: dict[str, tuple[ProfileHealthReport, float]] = {}
+
+    def get(self, username: str, include_details: bool) -> Optional[ProfileHealthReport]:
+        key = f"{username.lower()}:{include_details}"
+        entry = self._store.get(key)
+        if not entry:
+            return None
+        report, expires_at = entry
+        if time.monotonic() > expires_at:
+            del self._store[key]
+            return None
+        return report
+
+    def set(self, username: str, report: ProfileHealthReport, include_details: bool) -> None:
+        if len(self._store) >= self._max:
+            self._evict_expired()
+            if len(self._store) >= self._max:
+                first = next(iter(self._store))
+                del self._store[first]
+        key = f"{username.lower()}:{include_details}"
+        self._store[key] = (report, time.monotonic() + self._ttl)
+
+    def _evict_expired(self) -> None:
+        now = time.monotonic()
+        expired = [k for k, (_, exp) in self._store.items() if now > exp]
+        for k in expired:
+            del self._store[k]
+
+
 # Singleton for app use
 _report_cache: Optional[ReportCache] = None
+_profile_report_cache: Optional[ProfileReportCache] = None
 
 
 def get_report_cache(ttl_seconds: Optional[int] = None) -> ReportCache:
@@ -60,3 +96,16 @@ def get_report_cache(ttl_seconds: Optional[int] = None) -> ReportCache:
                 ttl_seconds = 300
         _report_cache = ReportCache(ttl_seconds=ttl_seconds)
     return _report_cache
+
+
+def get_profile_cache(ttl_seconds: Optional[int] = None) -> ProfileReportCache:
+    global _profile_report_cache
+    if _profile_report_cache is None:
+        if ttl_seconds is None:
+            try:
+                from back.config import get_settings
+                ttl_seconds = get_settings().cache_ttl_seconds
+            except Exception:
+                ttl_seconds = 300
+        _profile_report_cache = ProfileReportCache(ttl_seconds=ttl_seconds)
+    return _profile_report_cache

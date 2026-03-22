@@ -1,18 +1,25 @@
 # GitHub Doctor - comandos via Make
 # Uso: make [target]. Default: make help
+#
+# O backend usa venv em .venv (evita PEP 668 / externally-managed-environment no Linux).
 
-.PHONY: help install install-backend install-front run run-api run-front \
-	up down build-docker logs clean clean-all verify doctor
+VENV ?= .venv
+PY   := $(VENV)/bin/python
+PIP  := $(VENV)/bin/pip
+
+.PHONY: help venv install install-backend install-front run run-api run-front \
+	up down build-docker logs clean clean-all verify
 
 # Default target
 help:
 	@echo "GitHub Doctor - comandos disponíveis:"
 	@echo ""
+	@echo "  make venv           Cria .venv (python3 -m venv) — use antes do install-backend"
 	@echo "  make install        Instala dependências (backend + frontend)"
-	@echo "  make install-backend Instala apenas dependências Python"
+	@echo "  make install-backend Instala deps Python em .venv (cria o venv se não existir)"
 	@echo "  make install-front  Instala apenas dependências do frontend"
 	@echo ""
-	@echo "  make run-api        Sobe a API (uvicorn) na porta 8000"
+	@echo "  make run-api        Sobe a API (uvicorn) na porta 8000 (usa .venv)"
 	@echo "  make run-front      Sobe o frontend (Vite) na porta 5173"
 	@echo "  make run            Sobe API e frontend (dois processos)"
 	@echo ""
@@ -21,19 +28,23 @@ help:
 	@echo "  make build-docker   Build das imagens (api + web)"
 	@echo "  make logs           Docker Compose logs -f"
 	@echo ""
-	@echo "  make doctor REPO=owner/repo  CLI: analisa repositório (ex: make doctor REPO=octocat/Hello-World)"
 	@echo "  make verify         Roda script de verificação do pipeline (mock)"
 	@echo ""
 	@echo "  make clean          Remove __pycache__, .pyc, frontend/node_modules, frontend/dist"
 	@echo "  make clean-all      clean + .venv (se existir)"
 	@echo ""
 
+# --- venv (PEP 668: não use pip no Python do sistema) ---
+venv:
+	@test -d $(VENV) || python3 -m venv $(VENV)
+	$(PIP) install --upgrade pip
+
 # --- Instalação ---
 install: install-backend install-front
 
-install-backend:
-	pip install -r requirements.txt
-	@echo "Backend: dependências instaladas. Opcional: pip install -e . (para CLI)"
+install-backend: venv
+	$(PIP) install -r requirements.txt
+	@echo "Backend: dependências instaladas em $(VENV)/"
 
 install-front:
 	cd frontend && npm install
@@ -41,7 +52,8 @@ install-front:
 
 # --- Execução local ---
 run-api:
-	uvicorn main:app --reload --host 0.0.0.0 --port 8000
+	@test -f $(VENV)/bin/uvicorn || (echo "Execute antes: make install-backend" && exit 1)
+	cd "$(CURDIR)" && $(VENV)/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 run-front:
 	cd frontend && npm run dev
@@ -65,13 +77,11 @@ build-docker:
 logs:
 	docker compose logs -f
 
-# --- CLI e verificação ---
-doctor:
-	@if [ -z "$(REPO)" ]; then echo "Uso: make doctor REPO=owner/repo"; exit 1; fi
-	python -m back.interface.cli analyze $(REPO)
-
+# --- Verificação ---
 verify:
-	python scripts/verify_flow.py
+	@test -f $(PY) || python3 -m venv $(VENV)
+	@test -f $(VENV)/bin/uvicorn || $(PIP) install -r requirements.txt
+	$(PY) scripts/verify_flow.py
 
 # --- Limpeza ---
 clean:

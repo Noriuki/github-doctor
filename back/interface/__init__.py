@@ -1,1 +1,1 @@
-"""Interface layer - API and CLI."""
+"""Interface layer - API."""

@@ -30,7 +30,8 @@ A UI consome a API (`GET /analyze/{owner}/{repo}`), exibe erros com `request_id`
 - **CI/CD detection**: detect GitHub Actions workflows (`.github/workflows/`)
 - **Dependency health**: detect dependency files and estimate outdated counts (heuristic)
 - **Health score**: weighted overall score (0–100%) from documentation, tests, CI/CD, and dependencies
-- **Optional**: CLI, Markdown report export, badge URL for READMEs
+- **Perfil GitHub** (foco portfólio / recrutadores): README de perfil (`user/user`), completude (bio, links), repositórios fixados (GraphQL com token) ou top por estrelas, saúde média dos destaques — `GET /analyze/profile/{username}`
+- **Optional**: Markdown report export (`/analyze/.../report.md`), badge URL for READMEs
 
 ### Production-ready extras (observability & ops)
 
@@ -91,19 +92,18 @@ back/
 │   ├── github_client.py   # GitHub REST API client (implements GitHubRepositoryPort)
 │   ├── cache.py           # In-memory TTL cache for reports
 │   └── metrics.py         # Request/cache/error metrics (Prometheus-friendly)
-├── interface/        # Entry points (API and CLI)
-│   ├── api/          # FastAPI app, routes, middleware
+├── interface/        # API (FastAPI)
+│   ├── api/          # App factory, routes, middleware
 │   │   ├── app.py    # App factory, /health, /metrics
 │   │   ├── routes.py # /analyze/{owner}/{repo}
 │   │   └── middleware.py  # Request ID, structured logging, metrics timing
-│   └── cli.py        # Typer CLI
 └── config.py         # Settings (token, cache TTL, etc.)
 ```
 
 - **Domain**: Pydantic models only; no I/O.
 - **Application**: Use cases depend on **ports** (e.g. `GitHubRepositoryPort`); analysis and scoring live in `repository_analysis/`.
 - **Infrastructure**: `GitHubClient` implements the port and talks to GitHub REST API.
-- **Interface**: FastAPI routes and Typer CLI call the use case and return responses.
+- **Interface**: FastAPI routes call the use case and return responses.
 
 ## Setup
 
@@ -114,15 +114,24 @@ back/
 
 ### Install
 
+No Linux (PEP 668), o `pip` do sistema costuma recusar instalação global. O **Makefile** cria um ambiente virtual em **`.venv`** e instala ali.
+
 ```bash
 cd github-doctor
-pip install -r requirements.txt
+make install-backend    # cria .venv e instala requirements.txt
 ```
 
-Optional: install in editable mode with CLI entry point:
+Manualmente (equivalente):
 
 ```bash
-pip install -e .
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+```
+
+Opcional (desenvolvimento): instalação editável do pacote Python (use o pip do venv):
+
+```bash
+.venv/bin/pip install -e .
 ```
 
 ### Environment (optional)
@@ -161,12 +170,7 @@ make install-front     # uma vez
 make run-front        # sobe o front na porta 5173 (proxy para a API)
 ```
 
-**CLI (analisar repositório):**
-
-```bash
-make install-backend   # ou: pip install -e .
-make doctor REPO=octocat/Hello-World
-```
+Na UI há abas **Repositório** e **Perfil GitHub**. Para pins reais na análise de perfil, configure `GITHUB_DOCTOR_GITHUB_TOKEN` (GraphQL).
 
 **Verificação do pipeline (mock):**
 
@@ -304,23 +308,6 @@ curl -s "http://localhost:8000/analyze/octocat/Hello-World/badge" | jq
 - Outdated: 3
 ```
 
-## CLI (optional)
-
-If installed with `pip install -e .`:
-
-```bash
-github-doctor analyze owner/repo
-github-doctor analyze owner/repo --markdown
-github-doctor analyze owner/repo --markdown --output report.md
-```
-
-Or run the module:
-
-```bash
-python -m back.interface.cli analyze owner/repo
-python -m back.interface.cli analyze owner/repo -m -o report.md
-```
-
 ## GitHub Repo Badges
 
 Use the `/analyze/{owner}/{repo}/badge` endpoint to get a `markdown` field you can paste into your README. The badge reflects the current health score (e.g. 72%) with a color (green/yellow/red) based on the score.
@@ -329,7 +316,7 @@ Use the `/analyze/{owner}/{repo}/badge` endpoint to get a `markdown` field you c
 
 - **API integration**: GitHub REST API for repo metadata, file contents, and directory listing.
 - **Backend architecture**: Clean Architecture with domain, application, infrastructure, and interface layers.
-- **Developer tooling**: Health metrics, scoring, optional CLI, Markdown export, and badges for use in READMEs.
+- **Developer tooling**: Health metrics, scoring, Markdown export, and badges for use in READMEs.
 
 ## License
 

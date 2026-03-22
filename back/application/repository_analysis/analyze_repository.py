@@ -131,7 +131,7 @@ async def _analyze_tests(
         dir_items = await github.list_directory(owner, repo, first_test_path)
         if isinstance(dir_items, list):
             status.test_files_count = sum(1 for i in dir_items if i.get("type") == "file")
-        status.message = f"Test directories found: {', '.join(test_dirs)}"
+        status.message = f"Test directories found: {', '.join(status.test_dirs)}"
     else:
         status.present = TestPresence.MISSING
         status.message = "Missing"

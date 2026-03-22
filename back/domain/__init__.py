@@ -6,6 +6,9 @@ from back.domain.models import (
     TestStatus,
     CICDStatus,
     DependencyHealth,
+    ProfileHealthReport,
+    ProfileCompleteness,
+    PinnedRepoHighlight,
 )
 
 __all__ = [
@@ -14,4 +17,7 @@ __all__ = [
     "TestStatus",
     "CICDStatus",
     "DependencyHealth",
+    "ProfileHealthReport",
+    "ProfileCompleteness",
+    "PinnedRepoHighlight",
 ]

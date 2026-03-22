@@ -45,4 +45,13 @@ export async function getReport(owner, repo, raw = false) {
   return request(`${base}/analyze/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}${qs}`)
 }
 
-export const api = { getReport }
+/**
+ * Perfil GitHub — README de perfil, completude, pins (com token) ou top repos, saúde média.
+ */
+export async function getProfile(username, includeDetails = false) {
+  const qs = includeDetails ? '?include_details=true' : ''
+  const base = API_BASE || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8000')
+  return request(`${base}/analyze/profile/${encodeURIComponent(username)}${qs}`)
+}
+
+export const api = { getReport, getProfile }

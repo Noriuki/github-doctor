@@ -1,3 +1,24 @@
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
 .header { margin-bottom: 2rem; }
 
 .logo {
@@ -107,3 +128,11 @@ label:first-of-type { margin-top: 0; }
 .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--muted); }
 .footer a { color: var(--accent); text-decoration: none; }
 .footer a:hover { text-decoration: underline; }
+
+.profile-report .display-name { font-weight: 400; color: var(--muted); font-size: 0.95rem; }
+.profile-meta { margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--muted); }
+.recruiter-pitch { font-size: 0.95rem; line-height: 1.55; margin: 0 0 1rem 0; color: var(--text); }
+.completeness-score { margin: 0.35rem 0 0 0; font-size: 0.85rem; color: var(--accent); }
+.pinned-source { font-size: 0.8rem; color: var(--muted); margin: 0.75rem 0; }
+.highlights-list { margin: 0.35rem 0 0 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.6; }
+.highlights-list li { margin-bottom: 0.5rem; }
