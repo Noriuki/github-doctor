@@ -5,7 +5,7 @@ import { parseRepoInput } from '../utils/parseRepo'
 import { parseProfileInput } from '../utils/parseProfile'
 
 export function HomePage() {
-  const [mode, setMode] = useState('repo') // 'repo' | 'profile'
+  const [mode, setMode] = useState('repo')
   const [input, setInput] = useState('')
   const [result, setResult] = useState(null)
   const [profileResult, setProfileResult] = useState(null)
